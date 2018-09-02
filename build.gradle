@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+        google()
+        mavenLocal()
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${project.'kotlin.version'}")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:${project.'kotlin.version'}")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${project.'spring.boot.version'}")
+        classpath("com.google.protobuf:protobuf-gradle-plugin:${project.'protobuf.plugin.version'}")
+
+        classpath("net.ltgt.gradle:gradle-errorprone-plugin:${project.'errorprone.plugin.version'}")
+        classpath("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:${project.'spotbugs.plugin.version'}")
+        classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${project.'sonarqube.plugin.version'}")
+        classpath("gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:${project.'google.javaformat.version'}")
+        classpath("com.netflix.nebula:nebula-release-plugin:${project.'nebula.release.version'}")
+    }
+}
+
+apply plugin: 'nebula.release'
+//apply from: "$rootDir/gradle/codeQuality.gradle"
+//apply from: "$rootDir/gradle/testCoverage.gradle"
+
+allprojects {
+    group 'io.boonlogic.boku'
+
+    repositories {
+        jcenter()
+        maven { url "https://repo.spring.io/snapshot" }
+        maven { url "https://repo.spring.io/milestone" }
+        mavenLocal()
+    }
+}
+
+subprojects {
+
+    if(!it.name.endsWith("web-frontend")) {
+
+        apply from: "$rootDir/gradle/kotlin.gradle"
+        apply from: "$rootDir/gradle/java.gradle"
+
+        apply from: "$rootDir/gradle/commonConvention.gradle"
+
+//        apply from: "$rootDir/gradle/test.gradle"
+    }
+}
+
+task wrapper(type: Wrapper, description: "Update the Gradle wrapper") {
+    gradleVersion = project."gradle.version"
+}

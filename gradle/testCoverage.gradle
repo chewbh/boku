@@ -1,0 +1,39 @@
+apply from: "$rootDir/gradle/commonUtils.gradle"
+apply plugin: 'jacoco'
+
+afterEvaluate {
+    rootProject.task('fullTestCoverageReport', type: JacocoReport) {
+        group = 'verification'
+        description = 'aggregates jacoco results from all java/kotlin subprojects and generate a report'
+
+        // Pre-initialize these to empty collections to prevent NPE on += call below.
+        additionalSourceDirs = files()
+        sourceDirectories = files()
+        classDirectories = files()
+
+        def jacocoTestFiles = []
+
+        subprojects.findAll { !it.rootProject.isFrontendWebProject(it) }.each { testedProject ->
+            if (testedProject.hasProperty('sourceSets')) {
+                additionalSourceDirs += files(testedProject.sourceSets.main.allSource.srcDirs)
+                sourceDirectories += files(testedProject.sourceSets.main.allSource.srcDirs)
+                classDirectories += files(testedProject.sourceSets.main.output)
+
+                def coverageFileLocation = "$testedProject.buildDir/jacoco/test.exec"
+                if (new File(coverageFileLocation).exists()) {
+                    jacocoTestFiles << coverageFileLocation
+                }
+            }
+        }
+
+        logger.info('Aggregating next JaCoCo Coverage Files: {}', jacocoTestFiles)
+        executionData = files(jacocoTestFiles)
+
+        reports {
+            xml.enabled = false
+            csv.enabled = false
+            html.enabled = true
+        }
+    }
+    rootProject.tasks['sonarqube'].dependsOn fullTestCoverageReport
+}

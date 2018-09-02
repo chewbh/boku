@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+    <Blacklist timestamp="1499517269440"/>
+    <Whitelist timestamp="1499517269440">
+        <ID>LargeClass:ASTPatch.kt$ASTPatch : Patch</ID>
+        <ID>NestedBlockDepth:ASTMapping.kt$ASTMapping.ModificationMapper$internal fun mapSmells(modifications: List&lt;FileChange&gt;)</ID>
+    </Whitelist>
+</SmellBaseline>

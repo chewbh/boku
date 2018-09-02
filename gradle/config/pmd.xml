@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<ruleset name="Custom ruleset"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+    <description>
+        Ruleset checks for known bad practices
+    </description>
+
+    <rule ref="category/java/bestpractices.xml">
+        <!-- we do not care about this minor overhead, we are not Android application and we do not want to change
+             visibility of methods. Package-private visibility should be avoid almost always.-->
+        <exclude name="AccessorMethodGeneration"/>
+    </rule>
+
+    <rule ref="category/java/errorprone.xml">
+        <!-- sometimes, octal values is needed -->
+        <exclude name="AvoidUsingOctalValues"/>
+        <!-- that rule is too buggy, too much false positives-->
+        <exclude name="DataflowAnomalyAnalysis"/>
+        <!-- that is not practical, no options to allow some magic numbers, we will use our implementation -->
+        <exclude name="AvoidLiteralsInIfCondition"/>
+    </rule>
+
+    <rule ref="category/java/design.xml">
+        <!-- we are using CyclomaticComplexity -->
+        <exclude name="ModifiedCyclomaticComplexity"/>
+        <!-- we are using CyclomaticComplexity -->
+        <exclude name="StdCyclomaticComplexity"/>
+        <!-- extra final modifier does not make code more secure in that cases-->
+        <exclude name="ImmutableField"/>
+        <!-- this rule does not have any option, unreasonable to use -->
+        <exclude name="GodClass"/>
+        <!-- produce too much violations, suppressed till we figure out how useful that metrics-->
+        <exclude name="LawOfDemeter"/>
+        <!-- not needed -->
+        <exclude name="LoosePackageCoupling"/>
+    </rule>
+
+    <!-- Now we'll customize a rule's property value -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="methodReportLevel" value="11"/>
+            <property name="classReportLevel" value="11"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/design.xml/TooManyMethods">
+        <properties>
+            <property name="maxmethods" value="20"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/design.xml/AvoidDeeplyNestedIfStmts">
+        <properties>
+            <!-- default is 3 but we try to use single point of exit from method and that require extra IFs -->
+            <property name="problemDepth" value="4"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/multithreading.xml"/>
+    <rule ref="category/java/performance.xml">
+        <!--produces more false-positives than real problems-->
+        <exclude name="AvoidInstantiatingObjectsInLoops"/>
+        <!--not configurable, decreases readability-->
+        <exclude name="UseStringBufferForStringAppends"/>
+    </rule>
+
+</ruleset>

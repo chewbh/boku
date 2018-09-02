@@ -1,0 +1,386 @@
+import com.github.spotbugs.SpotBugsTask
+buildscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:${project.rootProject.'spotbugs.plugin.version'}")
+    }
+}
+
+apply from: "$rootDir/gradle/commonUtils.gradle"
+apply plugin: 'org.sonarqube'
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "Kotlin & Java :: soul-land"
+        property "sonar.projectKey", "org.sonarqube:soul-land"
+//        property "sonar.jacoco.reportPath", "${rootProject.buildDir}/jacoco/test.exec"
+        property "sonar.java.binaries", "$buildDir/classes/kotlin"
+        property "detekt.sonar.kotlin.config.path", "$rootDir/gradle/config/detekt.yml"
+        property "detekt.sonar.kotlin.baseline.path", "$rootDir/gradle/config/detekt-baseline.xml"
+    }
+}
+
+subprojects {
+    afterEvaluate {
+
+        boolean failFast = false
+
+        if(!rootProject.isFrontendWebProject(project)) {
+            addKtlint(project, !failFast)
+            addCheckStyle(project, !failFast)
+            addDetekt(project, !failFast)
+            addPMD(project, !failFast)
+            addSpotBugs(project, !failFast)
+//            addErrorProne(project)
+        }
+    }
+}
+
+/***
+ * CheckStyle verifies Java source code for coding conventions.
+ * In this case, it conforms to Google Java coding style guide with these exceptions:
+ *
+ * Max length line is 120 instead of 100,
+ * indentation is 4 spaces instead of 2 spaces
+ *
+ * @param subProject
+ * @param isIgnoreFailures
+ * @param vers
+ * @return
+ */
+def static final boolean addCheckStyle(
+    final Project subProject, Boolean isIgnoreFailures = false, String vers = '8.8') {
+
+    if (subProject.rootProject.isJavaProject(subProject)) {
+
+        subProject.plugins.apply('checkstyle')
+
+        subProject.checkstyle {
+            toolVersion = vers
+            // config = resources.text.fromArchiveEntry(configurations.checkstyle[0], 'google_checks.xml')
+            configFile = subProject.rootProject.file('gradle/config/google_checks.xml') as File
+            maxErrors = 0
+            maxWarnings = 0
+            ignoreFailures = isIgnoreFailures
+            showViolations = true
+        }
+
+        subProject.task('lintJava', type: Checkstyle) {
+            description = 'Runs checkstyle to check Java code style'
+            group = 'verification'
+
+            source = subProject.fileTree(dir: "src", include: "**/*.java")
+            classpath = subProject.files()
+
+            reports {
+                html.enabled = true
+                xml.enabled = true
+            }
+
+            outputs.upToDateWhen { !isIgnoreFailures }
+        }
+        subProject.tasks['checkstyleMain'].enabled = false
+        subProject.tasks['checkstyleTest'].enabled = false
+        subProject.check.dependsOn 'lintJava'
+        subProject.compileJava.dependsOn 'lintJava'
+        subProject.compileTestJava.dependsOn 'lintJava'
+
+        return true
+    }
+    return false
+}
+
+/***
+ * Ktlint is a linter verifies Kotlin source code for coding conventions against
+ * the official kotlin style guide and Google Android Kotlin style guide.
+ *
+ * It also include capabilities for formatting code to fix linting errors.
+ *
+ * @param subProject
+ * @param isIgnoreFailures
+ * @param vers
+ * @return
+ */
+def static final boolean addKtlint(
+    final Project subProject, Boolean isIgnoreFailures = false, String vers = '0.20.0') {
+
+    def isKotlinEnabled = subProject.rootProject.isKotlinProject(subProject)
+
+    if (isKotlinEnabled) {
+
+        subProject.configurations {
+            ktlint
+        }
+
+        subProject.dependencies {
+            ktlint("com.github.shyiko:ktlint:${vers}")
+        }
+
+        def outputDir = "${subProject.buildDir}/reports/ktlint/"
+        def inputFiles = subProject.fileTree(dir: "src", include: "**/*.kt")
+
+        subProject.task('lintKotlin', type: JavaExec) {
+            inputs.files(inputFiles)
+            outputs.dir(outputDir)
+            group = 'verification'
+            description = 'Runs ktlint to check Kotlin code style'
+            main = 'com.github.shyiko.ktlint.Main'
+            classpath = subProject.configurations.ktlint
+            args = [
+                "--reporter=plain",
+                "--reporter=checkstyle,output=${outputDir}ktlint-checkstyle-report.xml",
+                "--reporter=json,output=${outputDir}ktlint.json",
+                'src/**/*.kt'
+            ]
+            ignoreExitValue = isIgnoreFailures
+            outputs.upToDateWhen { !isIgnoreFailures }
+        }
+
+        subProject.task('formatKotlin', type: JavaExec) {
+            inputs.files(inputFiles)
+            outputs.upToDateWhen { true } // We only need the input as it'll change when we reformat.
+            group = 'formatting'
+            description = "Runs ktlint and autoformats your code."
+            main = "com.github.shyiko.ktlint.Main"
+            classpath = subProject.configurations.ktlint
+            args = ["-F", "src/**/*.kt"]
+            ignoreExitValue = true
+        }
+
+        if (!subProject.rootProject.tasks.names.contains('ktlintToIdea')) {
+            subProject.rootProject.task('ktlintToIdea', type: JavaExec) {
+                inputs.files(inputFiles)
+                outputs.dir(outputDir)
+                group = 'other'
+                description = 'Runs ktlint to idea'
+                main = 'com.github.shyiko.ktlint.Main'
+                classpath = subProject.configurations.ktlint
+                args = ['--apply-to-idea -y']
+            }
+        }
+        subProject.check.dependsOn 'lintKotlin'
+        subProject.compileKotlin.dependsOn 'lintKotlin'
+        subProject.compileTestKotlin.dependsOn 'lintKotlin'
+        return true
+    }
+    return false
+}
+
+/***
+ * PMD (Don't Shoot the Messenger) analyses Abstract Syntax Tree(AST) generated by Javac
+ * (but not actual compilation) and looks for potential problems such as
+ * dead and duplicated code, cyclomatic complexity, overcomplicated expressions
+ *
+ * @param subProject
+ * @param isIgnoreFailures
+ * @param vers
+ * @return
+ */
+def static final boolean addPMD(
+    final Project subProject, Boolean isIgnoreFailures = false, String vers = '6.1.0') {
+
+    if (subProject.rootProject.isJavaProject(subProject)) {
+        subProject.plugins.apply('pmd')
+        subProject.pmd {
+            toolVersion = vers
+            ignoreFailures = isIgnoreFailures
+            ruleSetFiles = subProject.files("$subProject.rootDir/gradle/config/pmd.xml")
+        }
+
+        subProject.pmdMain {
+            ruleSets = []
+        }
+
+        subProject.pmdTest {
+            ruleSets = []
+        }
+
+        subProject.task('checkJavaUsingPMD', type: Pmd) {
+            description = 'Runs PMD to perform static code analysis on Java Source'
+            group = 'verification'
+            ruleSets = []
+            source = subProject.fileTree(subProject.projectDir.absolutePath).include("src/main/**/*.java")
+
+            reports {
+                html.enabled = true
+                xml.enabled = false
+            }
+            outputs.upToDateWhen { !isIgnoreFailures }
+        }
+
+        subProject.tasks['pmdMain'].enabled = false
+        subProject.tasks['pmdTest'].enabled = false
+        subProject.check.dependsOn 'checkJavaUsingPMD'
+        return true
+    }
+    return false
+}
+
+/***
+ * Detekt is a static code analyzer on Kotlin source to detect code smells and bad practices.
+ * It is similar to PMD for Java.
+ *
+ * @param subProject
+ * @param isIgnoreFailures
+ * @param vers
+ * @return
+ */
+def static final boolean addDetekt(
+    final Project subProject, Boolean isIgnoreFailures = false, String vers = '1.0.0.RC6-3') {
+
+    if (subProject.rootProject.isKotlinProject(subProject)) {
+
+        subProject.configurations {
+            detekt
+        }
+
+        subProject.dependencies {
+            detekt "io.gitlab.arturbosch.detekt:detekt-cli:$vers"
+        }
+
+        def output = new File(subProject.buildDir, "reports/detekt/")
+        subProject.task('checkKotlinUsingDetekt', type: JavaExec) {
+
+            group = 'verification'
+            description = 'Runs detekt to perform static code analysis on Kotlin Source'
+            main = 'io.gitlab.arturbosch.detekt.cli.Main'
+            classpath = subProject.configurations.detekt
+            inputs.files(subProject.fileTree(dir: "src", include: "**/*.kt"))
+            outputs.dir(output.toString())
+            def filters = '.*/test/.*, .*/resources/.*,.*/build/.*,.*.java'
+            def sourceSize = inputs.files.filter { it.name.endsWith('.kt') || it.name.endsWith('.kts') }.size()
+            args = [
+                "--config", "$subProject.rootDir/gradle/config/detekt.yml",
+                "--baseline", "$subProject.rootDir/gradle/config/detekt-baseline.xml",
+                "--input", subProject.file("."),
+                "--output", output,
+                "--filters", filters
+            ]
+            if(sourceSize > 200) args += '--parallel'
+
+            ignoreExitValue = isIgnoreFailures
+            outputs.upToDateWhen { !isIgnoreFailures }
+        }
+        subProject.check.dependsOn 'checkKotlinUsingDetekt'
+        return true
+    }
+    return false
+}
+
+/***
+ * SpotBugs (successor to FindBugs) analyze byte code (mainly .classes)
+ * to find any design flaw and potential bugs.
+ *
+ * The main focus is on Correctness, Bad practice, Dodgy code, Multithreaded Correctness,
+ * Performance Malicious, Code Vulnerability, Security Experimental and Internationalization
+ *
+ * @param subProject
+ * @param isIgnoreFailures
+ * @param vers
+ * @return
+ */
+def static final boolean addSpotBugs(
+    final Project subProject, Boolean isIgnoreFailures = false,
+    String vers = '3.1.2', String secbugVers = '1.7.1') {
+
+    if (subProject.rootProject.isKotlinProject(subProject) ||
+        subProject.rootProject.isJavaProject(subProject)) {
+        subProject.plugins.apply('com.github.spotbugs')
+
+        subProject.dependencies {
+            spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:$secbugVers"
+        }
+
+        subProject.spotbugs {
+            toolVersion = vers
+            ignoreFailures = isIgnoreFailures
+            sourceSets = []
+            effort = "max"
+            reportLevel = "low"
+            includeFilter = subProject.rootProject.file('gradle/config/findbugs-filter.xml') as File
+        }
+
+        subProject.task('spotbugs', type: SpotBugsTask, dependsOn: 'classes') {
+            description = 'Runs spotbugs to analyze byte code'
+            group = 'verification'
+
+            classes = subProject.fileTree(project.buildDir.absolutePath).include("classes/*/main/**/*.class")
+            source = subProject.fileTree(project.projectDir.absolutePath).include("src/main/**/*.java")
+            source += subProject.fileTree(project.projectDir.absolutePath).include("src/main/**/*.kt")
+            classpath = subProject.files()
+            classpath += subProject.configurations.compile
+            classpath += subProject.configurations.compileOnly
+            spotbugsClasspath = subProject.configurations.spotbugs
+            pluginClasspath = subProject.configurations.spotbugsPlugins
+
+            ignoreFailures = isIgnoreFailures
+            effort = "max"
+            reportLevel = "low"
+
+            includeFilter = subProject.rootProject.file('gradle/config/findbugs-filter.xml') as File
+
+            reports {
+                xml.enabled = true
+                xml.destination = subProject.file("$subProject.buildDir/reports/spotbugs/spotbugs.xml") as File
+            }
+            outputs.upToDateWhen { !isIgnoreFailures }
+        }
+        subProject.tasks['spotbugsMain'].enabled = false
+        subProject.tasks['spotbugsTest'].enabled = false
+        subProject.check.dependsOn 'spotbugs'
+        return true
+    }
+    return false
+}
+
+/***
+ * Developed by Google,
+ * Error Prone is a static analysis tool for Java that catches common programming mistakes
+ * at compile-time by augmenting the compiler’s type analysis.
+ *
+ * @param subProject
+ * @param vers
+ * @return
+ */
+def static final boolean addErrorProne(
+    final Project subProject, String vers = '2.2.0') {
+
+    if(subProject.rootProject.isJavaProject(subProject)) {
+        subProject.plugins.apply('net.ltgt.errorprone')
+
+        subProject.dependencies {
+            errorprone "com.google.errorprone:error_prone_core:$vers"
+            errorprone "com.google.guava:guava:22.0"
+        }
+
+        subProject.tasks.withType(JavaCompile) {
+            options.compilerArgs += ['-XepDisableWarningsInGeneratedCode']
+        }
+
+        return true
+    }
+    return false
+}
+
+//public static boolean isJavaProject(final Project project) {
+//    final boolean isJava = project.plugins.hasPlugin('java')
+//    final boolean isJavaLibrary = project.plugins.hasPlugin('java-library')
+//    return isJava || isJavaLibrary
+//}
+//
+//public static boolean isKotlinProject(final Project project) {
+//    final boolean isKotlin = project.plugins.hasPlugin('kotlin')
+//    final boolean isKotlinPlatformCommon = project.plugins.hasPlugin('kotlin-platform-common')
+//    final boolean isKotlinPlatformJvm = project.plugins.hasPlugin('kotlin-platform-jvm')
+//    final boolean isKotlinPlatformJs = project.plugins.hasPlugin('kotlin-platform-js')
+//    return isKotlin || isKotlinPlatformCommon || isKotlinPlatformJvm || isKotlinPlatformJs
+//}
+//
+//public static boolean isFrontendWebProject(final Project project) {
+//    final boolean isNodeJSBased = project.plugins.hasPlugin('com.moowork.node')
+//    return isNodeJSBased
+//}
+
+

@@ -1,0 +1,44 @@
+autoCorrect: false
+failFast: true
+
+build:
+  warningThreshold: 5
+  failThreshold: 10
+  weights:
+    complexity: 2
+    formatting: 1
+    LongParameterList: 1
+    comments: 1
+
+potential-bugs:
+  active: true
+
+exceptions:
+  active: true
+
+empty-blocks:
+  active: true
+
+complexity:
+  active: true
+
+code-smell:
+  active: true
+
+formatting:
+  active: true
+  useTabs: true
+  ExpressionBodySyntax:
+    active: false
+
+style:
+  active: true
+  NamingConventionViolation:
+    enumEntryPattern: '^[A-Z$][a-zA-Z_$]*$'
+
+comments:
+  active: true
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false

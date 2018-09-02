@@ -1,0 +1,26 @@
+
+def static boolean isJavaProject(final Project project) {
+    final boolean isJava = project.plugins.hasPlugin('java')
+    final boolean isJavaLibrary = project.plugins.hasPlugin('java-library')
+    return isJava || isJavaLibrary
+}
+
+def static boolean isKotlinProject(final Project project) {
+    final boolean isKotlin = project.plugins.hasPlugin('kotlin')
+    final boolean isKotlinPlatformCommon = project.plugins.hasPlugin('kotlin-platform-common')
+    final boolean isKotlinPlatformJvm = project.plugins.hasPlugin('kotlin-platform-jvm')
+    final boolean isKotlinPlatformJs = project.plugins.hasPlugin('kotlin-platform-js')
+    return isKotlin || isKotlinPlatformCommon || isKotlinPlatformJvm || isKotlinPlatformJs
+}
+
+def static boolean isFrontendWebProject(final Project project) {
+    final boolean isNodeJSBased = project.plugins.hasPlugin('com.moowork.node')
+    return isNodeJSBased
+}
+
+// export utility methods by turning them into groovy closures
+ext {
+    isJavaProject = this.&isJavaProject
+    isKotlinProject = this.&isKotlinProject
+    isFrontendWebProject = this.&isFrontendWebProject
+}

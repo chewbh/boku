@@ -1,0 +1,56 @@
+apply plugin: 'jacoco'
+
+test {
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter', 'junit-vintage'
+        excludeTags 'slow'
+    }
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+
+        // show standard out and standard error of the test JVM(s) on the console
+        showStandardStreams = true
+    }
+
+    // set heap size for the test JVM(s)
+    minHeapSize = "128m"
+    maxHeapSize = "512m"
+
+    // set JVM arguments for the test JVM(s) to use G1 GC instead
+    jvmArgs '-XX:+UseG1GC'
+
+    // Fail the 'test' task on the first test failure
+    failFast = false
+
+    ignoreFailures = false
+
+    reports {
+        html.enabled = true
+    }
+}
+
+dependencies {
+
+    testCompile("com.nhaarman:mockito-kotlin:1.5.0")
+    testCompile("org.assertj:assertj-core:3.9.0")
+
+    // junit 5
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.'junit.jupiter.version'}")
+
+    // junit 4
+    testCompileOnly("junit:junit:${project.'junit.v4.version'}")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:${project.'junit.vintage.version'}")
+
+    // spek
+    testCompile("org.jetbrains.spek:spek-api:${project.'spek.version'}") {
+        exclude group: 'org.jetbrains.kotlin'
+    }
+    testCompile("org.jetbrains.spek:spek-subject-extension:${project.'spek.version'}") {
+        exclude group: 'org.jetbrains.kotlin'
+    }
+    testRuntime("org.jetbrains.spek:spek-junit-platform-engine:${project.'spek.version'}") {
+        exclude group: 'org.junit.platform'
+        exclude group: 'org.jetbrains.kotlin'
+    }
+}

@@ -1,0 +1,5 @@
+rootProject.name = 'boku'
+include 'support.infra.config-server'
+include 'microservices.video-search'
+//include 'util.encryption'
+
