@@ -1,0 +1,7 @@
+info.foo: bar
+
+spring:
+  rabbitmq:
+    addresses: teto:5672
+    username: boku
+#    password: admin
