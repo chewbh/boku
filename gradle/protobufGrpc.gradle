@@ -1,0 +1,48 @@
+
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+dependencies {
+
+    compile("com.google.api.grpc:proto-google-common-protos:1.0.0")
+    compile("io.grpc:grpc-alts:${project.'grpc.version'}")
+    compile("io.grpc:grpc-netty:${project.'grpc.version'}")
+    compile("io.grpc:grpc-protobuf:${project.'grpc.version'}")
+    compile("io.grpc:grpc-stub:${project.'grpc.version'}")
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${project.'protobuf.version'}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${project.'grpc.version'}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {
+                // To generate deprecated interfaces and static bindService method,
+                // turn the enable_deprecated option to true below:
+                option 'enable_deprecated=false'
+            }
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs '/build/generated/source/proto/main/grpc'
+        }
+    }
+}
+
+idea {
+    module {
+        // Not using generatedSourceDirs because of 
+        // https://discuss.gradle.org/t/support-for-intellij-2016/15294/8
+        sourceDirs += file("${projectDir}/build/generated/source/proto/main/grpc")
+    }
+}
