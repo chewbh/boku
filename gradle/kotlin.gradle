@@ -20,8 +20,6 @@ dependencies {
     compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     compile("org.jetbrains.kotlin:kotlin-reflect")
 
-    compile('com.fasterxml.jackson.module:jackson-module-kotlin')
-
     // kotlin test support
     testCompile("org.jetbrains.kotlin:kotlin-test")
     testCompile("org.jetbrains.kotlin:kotlin-test-junit")

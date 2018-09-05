@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    compile project(':util.encryption')
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.cloud:spring-cloud-config-server')
 }
