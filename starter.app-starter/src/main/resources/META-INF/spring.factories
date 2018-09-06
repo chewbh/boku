@@ -1,0 +1,2 @@
+org.springframework.cloud.bootstrap.BootstrapConfiguration=\
+  io.boonlogic.boku.app.props.DiscoveryFirstConfigServerPropertySourceLocator

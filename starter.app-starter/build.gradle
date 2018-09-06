@@ -1,0 +1,24 @@
+
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'java-library'
+}
+
+dependencies {
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    compileOnly("org.springframework.boot:spring-boot")
+    compileOnly('org.springframework.cloud:spring-cloud-starter-config')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${project.'spring.cloud.version'}"
+    }
+}
+
+jar {
+    enabled = true
+}
+

@@ -5,6 +5,9 @@ plugins {
 }
 
 dependencies {
+
+    compile project(':starter.app-starter')
+
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-webflux')
 

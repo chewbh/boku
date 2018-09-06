@@ -1,1 +1,1 @@
-logging.config=${spring.cloud.config.uri}/${spring.profiles.active}/master/logback.xml
+logging.config=${spring.cloud.config.uri}/*/development/master/logback.xml
