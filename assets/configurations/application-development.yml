@@ -1,0 +1,1 @@
+logging.config.test=${"${spring.cloud.config.uri}"}/${"${spring.profiles.active}"}/master/logback.xml
