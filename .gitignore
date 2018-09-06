@@ -158,3 +158,5 @@ gradle-app.setting
 ### security
 
 /**/*.jks
+/**/*.key
+/**/*.stn
