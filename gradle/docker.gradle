@@ -1,0 +1,31 @@
+apply plugin: 'docker'
+
+docker {
+  project.group = "io.boonlogic"
+  registry = "docker.boonlogic.io"
+}
+
+task buildImage(type: Docker, dependsOn: build) {
+  push = false
+  tagVersion = normalizeDockerVersion(version)
+  dockerfile = file("$projectDir/src/main/docker/Dockerfile")
+  
+  doFirst {
+    file("$stageDir/${jar.archiveName}").delete()
+    copy {
+      from jar
+      into stageDir
+      rename { 'app.jar' }
+    }
+    copy {
+      from "$rootDir/others"
+      into stageDir
+    }
+  }
+}
+
+def normalizeDockerVersion(version) {
+  String vers = project.version.toString()
+  return (vers.indexOf('+') > -1) ? vers.substring(0, vers.indexOf('+')) : vers
+}
+
