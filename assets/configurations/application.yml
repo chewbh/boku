@@ -6,5 +6,5 @@ spring:
     username: boku
     password: '{cipher}AQAKjHZ9rNogKYbp9ZoLekWEyfrDDa6o7B6ovgyTYkzjY+r1fLEBipzW6BGCr6vjxOYfq6fAGb/IqhP1F9aDcQFCalrCkB+6rHxdujFLVQtW2pRQcbd4kwMx4v2gQlvAy/sOPhFsOja/KEWhs0hi/zNbW1iwvk4zb7rtq8QJF4IPg68SPwQfqXsXcVGrqjWAjHc4jdFU1sUeFKkp4oRYKvtJ9GRAFSZd5DjvDjzLqiXRIObPG6K8x9Yq7bJQ4tRnPXFjJXNm0h29/GgZD0yp5b5bGPdy34Bdbv8PC4QLaD1zH8pxD0hLogvfJzdDiGV0UvpoYwS+X4Y0084f18JygmScXB5xcR3h4xnNxwy94gyaU7n204CPVhYRI7G2e+Ece/k='
 
-
-
+# enable health check status in Eureka
+eureka.client.healthcheck.enabled: true
