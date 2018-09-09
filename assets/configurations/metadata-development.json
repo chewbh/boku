@@ -6,5 +6,9 @@
   {
     "type": "data",
     "name": "hello"
+  },
+  {
+    "type": "text",
+    "name": "hero"
   }
 ]
