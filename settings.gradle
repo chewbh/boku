@@ -2,5 +2,6 @@ rootProject.name = 'boku'
 include 'support.infra.config-server'
 include 'microservices.video-search'
 include 'util.encryption'
-include 'starter.app-starter'
+include 'starters.app-starter'
+include 'starters.event-stream-starter'
 
