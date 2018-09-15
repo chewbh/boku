@@ -1,2 +1,8 @@
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-  io.boonlogic.boku.app.props.DiscoveryFirstConfigServerPropertySourceLocator
+  io.boonlogic.boku.app.props.DiscoveryFirstConfigServerPropertySourceLocator,\
+  io.boonlogic.boku.app.props.NonDiscoveryFirstConfigServerPropertySourceLocator,\
+  io.boonlogic.boku.app.config.OAuth2ConfigClientConfiguration,\
+  io.boonlogic.boku.app.config.OAuth2ConfigClientRestConfiguration
+
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  io.boonlogic.boku.app.autoconfigure.WebFluxSecurityAutoConfiguration

@@ -3,4 +3,7 @@ include 'support.infra.config-server'
 include 'microservices.video-search'
 include 'util.encryption'
 include 'starter.app-starter'
+include 'support.infra.eureka-server'
+include 'support.infra.oauth2-server'
+include 'starters.crypto-starter'
 

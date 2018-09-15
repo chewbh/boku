@@ -16,6 +16,7 @@ class Routes {
         accept(MediaType.APPLICATION_JSON)
             .and(path("/api")).nest {
                 GET("/name", configHandler::name)
+                GET("/metadata", configHandler::metadata)
                 GET("/foo", configHandler::foo)
             }
     }

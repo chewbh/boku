@@ -1,0 +1,3 @@
+org.springframework.cloud.bootstrap.BootstrapConfiguration=\
+  io.boonlogic.boku.cypto.autoconfigure.EncryptionAutoConfiguration,\
+  io.boonlogic.boku.cypto.autoconfigure.EncryptorLocatorAutoConfiguration

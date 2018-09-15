@@ -1,14 +1,22 @@
 buildscript {
-    repositories {
-        maven { url "http://localhost/artifactory/main" }
-    }
-    // repositories {
-        
-    //     jcenter()
-    //     maven { url "https://plugins.gradle.org/m2/" }
-    //     google()
-    //     mavenLocal()
-    // }
+     repositories {
+         try {
+             def localArtifactoryUrl = "http://localhost/artifactory/main"
+             def code = new URL(localArtifactoryUrl).openConnection().with {
+                 requestMethod = 'HEAD'
+                 connect()
+                 responseCode
+             }
+             if(code != 404) {
+                 maven { url localArtifactoryUrl }
+             }
+         } catch (Exception e) {
+             jcenter()
+             maven { url "https://plugins.gradle.org/m2/" }
+             google()
+         }
+         mavenLocal()
+     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${project.'kotlin.version'}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${project.'kotlin.version'}")
@@ -31,7 +39,22 @@ allprojects {
     group 'io.boonlogic.boku'
 
     repositories {
-        maven { url "http://localhost/artifactory/main" }
+        try {
+            def localArtifactoryUrl = "http://localhost/artifactory/main"
+            def code = new URL(localArtifactoryUrl).openConnection().with {
+                requestMethod = 'HEAD'
+                connect()
+                responseCode
+            }
+            if(code != 404) {
+                maven { url localArtifactoryUrl }
+            }
+        } catch (Exception e) {
+            jcenter()
+//            maven { url "https://plugins.gradle.org/m2/" }
+            google()
+        }
+        mavenLocal()
     }
 
     // repositories {    

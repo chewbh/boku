@@ -1,0 +1,21 @@
+
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-actuator')
+    compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${project.'spring.cloud.version'}"
+    }
+}
+
+springBoot {
+    buildInfo()
+}
+
