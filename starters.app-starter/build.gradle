@@ -21,6 +21,7 @@ dependencyManagement {
     }
 }
 
+/**  skip spring boot repackaging as this is a starter and not executable **/
 bootJar {
     enabled = false
 }

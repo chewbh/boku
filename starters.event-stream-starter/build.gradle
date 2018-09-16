@@ -1,14 +1,39 @@
 
 plugins {
+    id 'idea'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
     id 'java-library'
 }
 
-// apply plugin: ''
+apply from: "$rootDir/gradle/protobuf.gradle"
 
 dependencies {
 
-    
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    compileOnly("org.springframework.boot:spring-boot")
+    compileOnly("org.springframework.boot:spring-boot-starter")
+    compileOnly("org.springframework.boot:spring-boot-autoconfigure")
+
+    compile("org.springframework.cloud:spring-cloud-stream")
+    compileOnly("org.springframework.cloud:spring-cloud-stream-binder-rabbit")
+
+    compile("org.springframework.retry:spring-retry")
+}
+
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${project.'spring.cloud.version'}"
+    }
+}
+
+/**  skip spring boot repackaging as this is a starter and not executable **/
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
 }

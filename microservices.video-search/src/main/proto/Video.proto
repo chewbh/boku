@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package work;
+
+option java_package = "io.boonlogic.boku.microservices.video.event";
+option java_outer_classname = "WorkProtos";
+
+message WorkEvent {
+    string id = 1;
+    string desc = 2;
+}
+

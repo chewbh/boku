@@ -6,4 +6,6 @@ include 'starter.app-starter'
 include 'support.infra.eureka-server'
 include 'support.infra.oauth2-server'
 include 'starters.crypto-starter'
+include 'starters.app-starter'
+include 'starters.event-stream-starter'
 

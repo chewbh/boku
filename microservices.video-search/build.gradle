@@ -4,8 +4,12 @@ plugins {
     id 'io.spring.dependency-management'
 }
 
+apply from: "$rootDir/gradle/protobuf.gradle"
+
 dependencies {
 
+    compile project(':starters.app-starter')
+    compile project(':starters.event-stream-starter')
     compile project(':starter.app-starter')
     compile project(':starters.crypto-starter')
 
@@ -14,9 +18,10 @@ dependencies {
 
     compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
     compile('org.springframework.cloud:spring-cloud-starter-config')
-    compile('org.springframework.boot:spring-boot-starter-aop')
-    compile('org.springframework.retry:spring-retry')
+    // compile('org.springframework.boot:spring-boot-starter-aop')
+    // compile('org.springframework.retry:spring-retry')
 
+    // compile('org.springframework.boot:spring-boot-starter-amqp')
     compile('org.springframework.cloud:spring-cloud-stream-binder-rabbit')
     compile('org.springframework.cloud:spring-cloud-stream-reactive')
 
@@ -44,4 +49,8 @@ processResources {
     filesMatching("**/*.yml") {
         expand(project.properties)
     }
+}
+
+bootJar {
+    launchScript()
 }
