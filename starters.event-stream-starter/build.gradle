@@ -11,12 +11,9 @@ apply from: "$rootDir/gradle/protobuf.gradle"
 dependencies {
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-
     compileOnly("org.springframework.boot:spring-boot")
-    compileOnly("org.springframework.boot:spring-boot-starter")
-    compileOnly("org.springframework.boot:spring-boot-autoconfigure")
 
-    compile("org.springframework.cloud:spring-cloud-stream")
+    compile('org.springframework.cloud:spring-cloud-stream-reactive')
     compileOnly("org.springframework.cloud:spring-cloud-stream-binder-rabbit")
 
     compile("org.springframework.retry:spring-retry")

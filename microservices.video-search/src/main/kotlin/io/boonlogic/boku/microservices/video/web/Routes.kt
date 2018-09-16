@@ -18,6 +18,7 @@ class Routes {
                 GET("/name", configHandler::name)
                 GET("/metadata", configHandler::metadata)
                 GET("/foo", configHandler::foo)
+                POST("/video/search", configHandler::submitVideoSearchRequest)
             }
     }
 }

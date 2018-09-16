@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
+import org.springframework.security.web.server.SecurityWebFilterChain
 import java.util.UUID
 
 @ConditionalOnMissingBean(ReactiveUserDetailsService::class)
@@ -28,27 +29,34 @@ import java.util.UUID
 @Configuration
 class WebFluxSecurityAutoConfiguration {
 
+    /** this should default / give priority to bcrypt encoder for password hashing **/
     @Bean
     fun encoder(): PasswordEncoder =
         PasswordEncoderFactories.createDelegatingPasswordEncoder()
 
     @Bean
-    fun userDetailsService(encoder: PasswordEncoder): MapReactiveUserDetailsService {
+    fun userDetailsService(delegatingPwdEncoder: PasswordEncoder): MapReactiveUserDetailsService {
 
         val randomPassword = UUID.randomUUID().toString()
         val user = User
             .withUsername("user")
-            .password(encoder.encode(randomPassword))
+            .password(delegatingPwdEncoder.encode(randomPassword))
             .roles("USER").build()
+
+        println("userDetailsService: $randomPassword")
+
         return MapReactiveUserDetailsService(user)
     }
 
     @Bean
-    fun securityFilterChain(http: ServerHttpSecurity) =
-        http.httpBasic()
-            .and()
-            .authorizeExchange()
+    fun securityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain =
+        http.authorizeExchange()
             .anyExchange().permitAll()
+            .and()
+            .httpBasic()
+            .and()
+            .csrf().disable()
+            .build()
 }
 
 @ConditionalOnClass(WebSecurityConfigurerAdapter::class)
@@ -60,6 +68,7 @@ class WebFluxSecurityAutoConfiguration {
 @Configuration
 class ServletBasedWebSecurityConfiguration: WebSecurityConfigurerAdapter() {
 
+    /** this should default / give priority to bcrypt encoder for password hashing **/
     @Bean
     fun encoder(): PasswordEncoder =
         PasswordEncoderFactories.createDelegatingPasswordEncoder()
@@ -68,12 +77,12 @@ class ServletBasedWebSecurityConfiguration: WebSecurityConfigurerAdapter() {
     @ConditionalOnMissingBean(
         type = ["org.springframework.security.oauth2.client.registration.ClientRegistrationRepository"])
     @Lazy
-    fun userDetailsManager(encoder: PasswordEncoder): InMemoryUserDetailsManager {
+    fun userDetailsManager(delegatingPwdEncoder: PasswordEncoder): InMemoryUserDetailsManager {
 
         val randomPassword = UUID.randomUUID().toString()
         val user = User
             .withUsername("user")
-            .password(encoder.encode(randomPassword))
+            .password(delegatingPwdEncoder.encode(randomPassword))
             .roles("USER").build()
         return InMemoryUserDetailsManager(user)
     }

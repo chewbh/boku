@@ -8,6 +8,6 @@ data class VideoSearchRequest(
 )
 
 data class VideoSearchCreationResponse(
-    val id,
-    val creationTime: ZonedDateTime
+    val id: String,
+    val creationTime: ZonedDateTime = ZonedDateTime.now()
 )
