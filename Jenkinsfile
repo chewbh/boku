@@ -12,6 +12,9 @@ pipeline {
             }
         }
         stage('Build Release') {
+            when {
+                branch 'master'
+            }
             steps {
                 sh "./gradlew build"
             }
@@ -24,5 +27,13 @@ pipeline {
 //                }
 //            }
 //        }
+    }
+
+    options {
+        // keep at most 10 builds at a time
+        buildDiscarder(logRotator(numToKeepStr:'10'))
+
+        // ensure this build doesn't hang forever with 1 hr timeout
+        timeout(time: 60, unit: 'MINUTES')
     }
 }
