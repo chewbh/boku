@@ -2,7 +2,7 @@ apply plugin: 'jacoco'
 
 test {
     useJUnitPlatform {
-        includeEngines 'junit-jupiter', 'junit-vintage'
+        includeEngines 'junit-jupiter', 'junit-vintage', 'spek'
         excludeTags 'slow'
     }
     testLogging {
@@ -20,7 +20,7 @@ test {
     jvmArgs '-XX:+UseG1GC'
 
     // Fail the 'test' task on the first test failure
-    failFast = false
+    failFast = true
 
     ignoreFailures = false
 

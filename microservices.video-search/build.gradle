@@ -5,6 +5,7 @@ plugins {
 }
 
 apply from: "$rootDir/gradle/protobuf.gradle"
+apply from: "$rootDir/gradle/test.gradle"
 
 dependencies {
 

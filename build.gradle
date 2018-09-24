@@ -33,7 +33,7 @@ buildscript {
 
 apply plugin: 'nebula.release'
 //apply from: "$rootDir/gradle/codeQuality.gradle"
-//apply from: "$rootDir/gradle/testCoverage.gradle"
+apply from: "$rootDir/gradle/testCoverage.gradle"
 
 allprojects {
     group 'io.boonlogic.boku'

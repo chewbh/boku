@@ -35,5 +35,5 @@ afterEvaluate {
             html.enabled = true
         }
     }
-    rootProject.tasks['sonarqube'].dependsOn fullTestCoverageReport
+//    rootProject.tasks['sonarqube'].dependsOn fullTestCoverageReport
 }
