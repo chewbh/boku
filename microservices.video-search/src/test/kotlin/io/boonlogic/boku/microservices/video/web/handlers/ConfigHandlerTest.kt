@@ -87,15 +87,22 @@ class ApplicationTests {
     fun dataMock(
         expectedSQL: String,
         validResult: Result<*> = DSL.using(SQLDialect.POSTGRES).newResult(
-            DSL.using(SQLDialect.POSTGRES).newRecord(DSL.field("title"), DSL.field("desc"))
-        ),
+            DSL.field("title", String::class.java), DSL.field("desc", String::class.java)
+        ).apply {
+            add(
+                DSL.using(SQLDialect.POSTGRES)
+                .newRecord(DSL.field("title", String::class.java), DSL.field("desc", String::class.java))
+                .apply {
+                    values("","")
+                }
+            )
+        },
         invaildResult: Result<*> = DSL.using(SQLDialect.POSTGRES).newResult()
     ): DSLContext {
         val provider = object : MockDataProvider {
             override fun execute(ctx: MockExecuteContext?): Array<MockResult> {
                 val sql = ctx?.sql() ?: ""
                 val bindedSQL = DSL.using(SQLDialect.POSTGRES).query(sql, *ctx?.bindings())
-
 
                 println(bindedSQL.toString())
                 println(expectedSQL)
@@ -104,7 +111,7 @@ class ApplicationTests {
                 return if(expectedSQL == bindedSQL.toString()) {
                     arrayOf(MockResult(1, validResult))
                 } else {
-                    arrayOf(MockResult(0, validResult))
+                    arrayOf(MockResult(0, invaildResult))
                 }
             }
         }
