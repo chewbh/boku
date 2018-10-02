@@ -46,6 +46,29 @@ pipeline {
                 }
             }
         }
+        stage('distribute') {
+            steps {
+                script {
+                    def SERVER_ID = '4711'
+                    def server = Artifactory.server SERVER_ID
+                    def uploadSpec =
+                        """
+					{
+						"files": [
+							{
+								"pattern": "build/libs/boku-(*).jar",
+								"target": "libs-snapshot-local/io/boonlogic/boku/{1}/"
+							}
+						]
+					}
+					"""
+                    def buildInfo = Artifactory.newBuildInfo()
+                    buildInfo.env.capture = true
+                    buildInfo=server.upload(uploadSpec)
+                    server.publishBuildInfo(buildInfo)
+                }
+            }
+        }
 //        stage("SonarQube Quality Gate") {
 //            timeout(time: 1, unit: 'HOURS') {
 //                def qg = waitForQualityGate()
