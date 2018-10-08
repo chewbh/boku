@@ -5,9 +5,11 @@ pipeline {
 
     environment {
         DOCKER_HOST = ''	// remove specifying of docker host, switch to docker.sock
-        // GIT_CREDS         = credentials('docker-build')
-        JOB_NAME          = "$JOB_NAME"
-        BUILD_NUMBER      = "$BUILD_NUMBER"
+        GIT_CREDS = credentials('git-ci')
+        GIT_USERNAME = "$GIT_CREDS_USR"
+        GIT_PASSWORD = "$GIT_CREDS_PSW"
+        JOB_NAME = "$JOB_NAME"
+        BUILD_NUMBER = "$BUILD_NUMBER"
     }
 
     stages {
@@ -31,7 +33,7 @@ pipeline {
                 docker 'zenika/kotlin:1.3-jdk8-alpine'
             }
             steps {
-                sh "./gradlew build"
+                sh "./gradlew -Dorg.ajoberstar.grgit.auth.username='$GIT_CREDS_USR' -Dorg.ajoberstar.grgit.auth.password=$GIT_CREDS_PSW -Prelease.scope=patch final"
             }
             post {
                 always {
@@ -57,7 +59,7 @@ pipeline {
 						"files": [
 							{
 								"pattern": "build/libs/boku-(*).jar",
-								"target": "libs-snapshot-local/io/boonlogic/boku/{1}/"
+								"target": "libs-release-local/io/boonlogic/boku/{1}/"
 							}
 						]
 					}
