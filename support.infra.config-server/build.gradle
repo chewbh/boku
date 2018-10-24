@@ -5,17 +5,20 @@ plugins {
 }
 
 dependencies {
-    compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.cloud:spring-cloud-config-server')
-    compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+    implementation project(':starters.telemetry-starter')
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
+    implementation('io.micrometer:micrometer-registry-prometheus')
 
-    compile project(':starters.crypto-starter')
-    compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.cloud:spring-cloud-starter-oauth2')
-    compile('javax.xml.bind:jaxb-api:2.3.0')
+    implementation('org.springframework.cloud:spring-cloud-config-server')
+    implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
 
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile('org.springframework.security:spring-security-test')
+    implementation project(':starters.crypto-starter')
+    implementation('org.springframework.boot:spring-boot-starter-security')
+    implementation('org.springframework.cloud:spring-cloud-starter-oauth2')
+    implementation('javax.xml.bind:jaxb-api:2.3.0')
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation('org.springframework.security:spring-security-test')
 }
 
 dependencyManagement {

@@ -26,6 +26,7 @@ class SecurityConfiguration: WebSecurityConfigurerAdapter() {
             ?.antMatchers(HttpMethod.POST, "/decrypt")?.denyAll()
             ?.antMatchers("/*.xml", "/**/*.xml")?.permitAll()
             ?.antMatchers("/*.json", "/**/*.json")?.permitAll()
+            ?.antMatchers("/actuator", "/actuator/**")?.permitAll()
             ?.anyRequest()?.authenticated()
     }
 }
