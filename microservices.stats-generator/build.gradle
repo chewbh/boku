@@ -1,0 +1,63 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+apply from: "$rootDir/gradle/protobuf.gradle"
+apply from: "$rootDir/gradle/test.gradle"
+
+dependencies {
+
+    implementation project(':starters.app-starter')
+    implementation project(':starters.event-stream-starter')
+    implementation project(':starters.crypto-starter')
+
+    implementation project(':starters.telemetry-starter')
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
+    implementation('io.micrometer:micrometer-registry-prometheus')
+
+    implementation('org.springframework.cloud:spring-cloud-starter-config')
+
+    implementation('org.springframework.cloud:spring-cloud-stream-binder-rabbit')
+    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    implementation('org.springframework.boot:spring-boot-starter-jetty')
+
+    implementation('org.apache.spark:spark-core_2.11:2.2.0')
+    implementation('org.apache.spark:spark-sql_2.11:2.2.0')
+    implementation("org.slf4j:log4j-over-slf4j:1.7.13")
+
+
+}
+
+configurations.all {
+    exclude group: "org.slf4j", module: "slf4j-log4j12"
+    exclude group: "log4j", module: "log4j"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${project.'spring.cloud.version'}"
+    }
+}
+
+springBoot {
+    buildInfo()
+}
+
+processResources {
+    filesMatching("**/*.properties") {
+        expand(project.properties)
+    }
+    filesMatching("**/*.yml") {
+        expand(project.properties)
+    }
+}
+
+bootJar {
+    launchScript()
+}
+
