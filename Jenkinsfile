@@ -50,6 +50,7 @@ pipeline {
         }
         stage('distribute') {
             steps {
+                sh "gradle task"
                 script {
                     def SERVER_ID = '4711'
                     def server = Artifactory.server SERVER_ID
