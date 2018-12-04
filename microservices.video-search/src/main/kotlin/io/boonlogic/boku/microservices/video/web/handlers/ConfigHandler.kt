@@ -7,6 +7,9 @@ import io.boonlogic.boku.event.VideoEvents
 import io.boonlogic.boku.microservices.video.domain.Metadata
 import io.boonlogic.boku.microservices.video.domain.VideoSearchCreationResponse
 import io.boonlogic.boku.microservices.video.domain.VideoSearchRequest
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.context.config.annotation.RefreshScope
@@ -22,7 +25,10 @@ import org.springframework.cloud.stream.messaging.Source
 import org.springframework.http.MediaType
 import org.springframework.messaging.support.MessageBuilder
 import org.springframework.web.reactive.function.server.EntityResponse
+import java.time.Duration
+import java.util.Random
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 @EnableBinding(Source::class)
 @RefreshScope
@@ -31,15 +37,52 @@ class ConfigHandler(
     @Value("\${configuration.project-name}") private val projectName: String,
     @Value("\${info.foo}") private val foo: String,
     private val metadata: List<Metadata>,
-    private val eventStreamSource: Source
+    private val eventStreamSource: Source,
+    private val registry: MeterRegistry
 ) {
     private val log = LoggerFactory.getLogger(ConfigHandler::class.java)
+
+
 
     fun name(req: ServerRequest): Mono<ServerResponse> =
         ServerResponse.ok().body(projectName.toMono(), String::class.java)
 
-    fun foo(req: ServerRequest) =
-        ServerResponse.ok().body(foo.toMono(), String::class.java)
+    fun foo(req: ServerRequest): Mono<ServerResponse> {
+        return ServerResponse.ok().body(foo.toMono().map {
+
+            val type = if(Random().nextBoolean()) "adhoc" else "scheduled"
+
+            Counter.builder("search.jobs.submitted")
+                .description("count of batch search job submitted")
+                .tags(
+                    "type", type,
+                    "searchMode", "foo"
+                ).register(registry).increment()
+
+            if(Random().nextBoolean()) {
+                val fooTimer = Timer
+                    .builder("search.jobs.duration")
+                    .description("Latency of completed or erroneous jobs") // optional
+                    .tags(
+                        "type", type,
+                        "searchMode", "foo"
+                    )
+                    .publishPercentiles(0.5, 0.95) // median and 95th percentile
+                    .publishPercentileHistogram()
+                    .sla(Duration.ofMillis(100))
+                    .minimumExpectedValue(Duration.ofSeconds(1))
+                    .maximumExpectedValue(Duration.ofSeconds(3000))
+                    .register(registry)
+
+                fooTimer.record(Random().nextInt(3000).toLong(), TimeUnit.SECONDS)
+            } else {
+                log.info("not complete yet")
+            }
+
+            it
+        }, String::class.java)
+    }
+
 
     fun metadata(req: ServerRequest): Mono<ServerResponse> {
         return  ServerResponse.ok().body(metadata.toMono(),
