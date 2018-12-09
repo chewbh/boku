@@ -1,0 +1,3 @@
+[submodule "assets/infra/monitoring"]
+	path = assets/infra/monitoring
+	url = git@github.com:chewbh/boku-monitoring.git
